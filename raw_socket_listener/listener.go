@@ -99,54 +99,6 @@ const (
 	EnginePcapFile
 )
 
-// NewListener creates and initializes new Listener object
-func NewListener(addr string, port string, engine int, trackResponse bool, expire time.Duration, bpfFilter string, timestampType string, bufferSize int, overrideSnapLen bool, immediateMode bool) (l *Listener) {
-	l = &Listener{}
-
-	l.packetsChan = make(chan *packet, 10000)
-	l.messagesChan = make(chan *TCPMessage, 10000)
-	l.quit = make(chan bool)
-	l.readyCh = make(chan bool, 1)
-
-	l.messages = make(map[tcpID]*TCPMessage)
-	l.ackAliases = make(map[uint32]uint32)
-	l.seqWithData = make(map[uint32]uint32)
-	l.respAliases = make(map[uint32]*TCPMessage)
-	l.respWithoutReq = make(map[uint32]tcpID)
-	l.trackResponse = trackResponse
-	l.bpfFilter = bpfFilter
-	l.timestampType = timestampType
-	l.immediateMode = immediateMode
-	l.bufferSize = bufferSize
-	l.overrideSnapLen = overrideSnapLen
-
-	l.addr = addr
-	_port, _ := strconv.Atoi(port)
-	l.port = uint16(_port)
-
-	if expire.Nanoseconds() == 0 {
-		expire = 2000 * time.Millisecond
-	}
-
-	l.messageExpire = expire
-
-	go l.listen()
-
-	// Special case for testing
-	if l.port != 0 {
-		switch engine {
-		case EnginePcap:
-			go l.readPcap()
-		case EnginePcapFile:
-			go l.readPcapFile()
-		default:
-			log.Fatal("Unknown traffic interception engine:", engine)
-		}
-	}
-
-	return
-}
-
 func (t *Listener) listen() {
 	gcTicker := time.Tick(t.messageExpire / 2)
 
