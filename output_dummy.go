@@ -17,7 +17,7 @@ func NewDummyOutput() (di *DummyOutput) {
 
 func (i *DummyOutput) Write(data []byte) (int, error) {
 	fmt.Println(string(data))
-	fmt.Println("cbl")
+	fmt.Println("======================")
 
 	return len(data), nil
 }

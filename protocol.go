@@ -2,8 +2,6 @@ package main
 
 import (
 	"bytes"
-	"crypto/rand"
-	"encoding/hex"
 	"strconv"
 )
 
@@ -13,33 +11,7 @@ const (
 	ReplayedResponsePayload = '3'
 )
 
-func uuid() []byte {
-	b := make([]byte, 20)
-	rand.Read(b)
-
-	uuid := make([]byte, 40)
-	hex.Encode(uuid, b)
-
-	return uuid
-}
-
 var payloadSeparator = "\n🐵🙈🙉\n"
-
-func payloadScanner(data []byte, atEOF bool) (advance int, token []byte, err error) {
-	if atEOF && len(data) == 0 {
-		return 0, nil, nil
-	}
-
-	if i := bytes.Index(data, []byte(payloadSeparator)); i >= 0 {
-		// We have a full newline-terminated line.
-		return i + len([]byte(payloadSeparator)), data[0:i], nil
-	}
-
-	if atEOF {
-		return len(data), data, nil
-	}
-	return 0, nil, nil
-}
 
 // Timing is request start or round-trip time, depending on payloadType
 func payloadHeader(payloadType byte, uuid []byte, timing int64, latency int64) (header []byte) {
@@ -76,28 +48,10 @@ func payloadHeader(payloadType byte, uuid []byte, timing int64, latency int64) (
 	return header
 }
 
-func payloadBody(payload []byte) []byte {
-	headerSize := bytes.IndexByte(payload, '\n')
-	return payload[headerSize+1:]
-}
-
 func payloadMeta(payload []byte) [][]byte {
 	headerSize := bytes.IndexByte(payload, '\n')
 	if headerSize < 0 {
 		headerSize = 0
 	}
 	return bytes.Split(payload[:headerSize], []byte{' '})
-}
-
-func isOriginPayload(payload []byte) bool {
-	switch payload[0] {
-	case RequestPayload, ResponsePayload:
-		return true
-	default:
-		return false
-	}
-}
-
-func isRequestPayload(payload []byte) bool {
-	return payload[0] == RequestPayload
 }
