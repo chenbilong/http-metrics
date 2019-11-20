@@ -10,19 +10,6 @@ import (
 
 var _ = log.Println
 
-// TCP Flags
-const (
-	fFIN = 1 << iota
-	fSYN
-	fRST
-	fPSH
-	fACK
-	fURG
-	fECE
-	fCWR
-	fNS
-)
-
 type tcpID [24]byte
 
 // TCPPacket provides tcp packet parser

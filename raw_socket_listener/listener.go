@@ -86,19 +86,6 @@ type Listener struct {
 	readyCh chan bool
 }
 
-type request struct {
-	id    tcpID
-	start time.Time
-	ack   uint32
-}
-
-// Available engines for intercepting traffic
-const (
-	EngineRawSocket = 1 << iota
-	EnginePcap
-	EnginePcapFile
-)
-
 func (t *Listener) listen() {
 	gcTicker := time.Tick(t.messageExpire / 2)
 
